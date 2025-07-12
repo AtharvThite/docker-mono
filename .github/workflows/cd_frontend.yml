@@ -22,19 +22,8 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./docker/Dockerfile.backend
+          file: ./docker/Dockerfile.frontend
+          build-args: DB_URL=${{ secrets.DB_URL }}
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/mono-backend:${{ github.sha }}
-      
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: 13.203.161.80
-          username: ubuntu
-          key: ${{ secrets.PRIVATE_SSH_KEY }}
-          port: 22
-          script: | 
-            docker stop user_backend || true
-            docker rm user_backend || true
-            docker pull atharvthite05/mono-backend:${{ github.sha }}
-            docker run --name user_backend -p 8080:8080 -d atharvthite05/mono-backend:${{ github.sha }}
+
