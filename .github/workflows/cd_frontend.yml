@@ -25,5 +25,5 @@ jobs:
           file: ./docker/Dockerfile.frontend
           build-args: DB_URL=${{ secrets.DB_URL }}
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/mono-backend:${{ github.sha }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/mono-frontend:${{ github.sha }}
 
