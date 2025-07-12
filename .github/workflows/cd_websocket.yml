@@ -1,0 +1,40 @@
+name : Continuous Deployment Websocket
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v3
+
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/Dockerfile.websocket
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/mono-websocket:${{ github.sha }}
+      
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: 13.203.161.80
+          username: ubuntu
+          key: ${{ secrets.PRIVATE_SSH_KEY }}
+          port: 22
+          script: | 
+            docker stop user_websocket || true
+            docker rm user_websocket || true
+            docker pull atharvthite05/mono-websocket:${{ github.sha }}
+            docker run --name user_websocket -p 8080:8080 -d atharvthite05/mono-websocket:${{ github.sha }}
