@@ -26,4 +26,17 @@ jobs:
           build-args: DB_URL=${{ secrets.DB_URL }}
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/mono-frontend:${{ github.sha }}
+      
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: 13.203.161.80
+          username: ubuntu
+          key: ${{ secrets.PRIVATE_SSH_KEY }}
+          port: 22
+          script: | 
+            docker stop user_frontend || true
+            docker rm user_frontend || true
+            docker pull atharvthite05/mono-frontend:${{ github.sha }}
+            docker run --name user_frontend -p 3000:3000 -e DB_URL=${{ secrets.DB_URL }} -d atharvthite05/mono-frontend:${{ github.sha }}
 
